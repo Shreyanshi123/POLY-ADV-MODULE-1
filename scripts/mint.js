@@ -1,32 +1,35 @@
-// We require the Hardhat Runtime Environment explicitly here. This is optional
-// but useful for running the script in a standalone fashion through `node <script>`.
-//
-// You can also run a script with `npx hardhat run <script>`. If you do that, Hardhat
-// will compile your contracts, add the Hardhat Runtime Environment's members to the
-// global scope, and execute the script.
 const hre = require("hardhat");
-const NFTContractJSON = require("../artifacts/contracts/PokemonContract.sol/PokemonContract.json");
 require('dotenv').config()
 
-const NFTAddress = "0x40b09C149f873C87f436610f813A116f39c02FA9";
-const NFTABI = NFTContractJSON.abi;
-const walletAddress = "0xBEefDB19e5B0B50F8b0D403c89F381432035f932"; 
+const NFTAddress = "0x4C614F660780b3A6C38fe4d3797714925d15dE96";
+
+// Replace "YourContractClassName" with the actual contract class name
+const NFTContractClass = "PokemonContract"; // Example: "PokemonContract"
+
+// Replace "YOUR_WALLET_ADDRESS" with your actual Ethereum address
+const walletAddress = "0x335F87d07A1e8a6A1FBF42d5265AdC6dCC732315"; // Example: "0x1234567890123456789012345678901234567890"
 
 async function main() {
+  const NFT = await hre.ethers.getContractAt(NFTContractClass, NFTAddress);
 
-    const NFT = await hre.ethers.getContractAt(NFTABI, NFTAddress);
-  
-    const tx = await NFT.mint(5);
+  for (let i = 0; i < 5; i++) {
+    const tx = await NFT.mintPokemon(
+      walletAddress,
+      "PokemonName" + i,      // Unique name for each NFT
+      "Description" + i,      // Unique description for each NFT
+      "ImageURI" + i,         // Unique image URI for each NFT
+      "ElementType" + i       // Unique element type for each NFT
+    );
+
     await tx.wait();
-
-    console.log("You now have: " + await NFT.balanceOf(walletAddress) + " nfts");
-
-    console.log("Prompt: ", await NFT._promptDescription());
   }
-  
-  // We recommend this pattern to be able to use async/await everywhere
-  // and properly handle errors.
-  main().catch((error) => {
-    console.error(error);
-    process.exitCode = 1;
-  });
+
+  console.log("You now have: " + await NFT.balanceOf(walletAddress) + " nfts");
+
+  console.log("Prompt: ", await NFT.getPromptDescription());
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
