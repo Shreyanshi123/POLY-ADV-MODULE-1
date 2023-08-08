@@ -3,14 +3,13 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
 
 contract PokemonContract is ERC721Enumerable, Ownable {
-    using Counters for Counters.Counter;
-    Counters.Counter private _tokenIdCounter;
-
     // The base URI for metadata of the tokens
-    string private baseTokenURI;
+    string private constant BASE_TOKEN_URI = "https://gateway.pinata.cloud/ipfs/QmYTkrE8PaLvTaG5NNM7Q5DPFXEA5Pzb4CkuES1D6DK3YK/?_gl=1*1yv469*_ga*Mjg2NTM3OTMuMTY5MTE4MjQxNQ..*_ga_5RMPXG14TE*MTY5MTI2ODYwMy41LjEuMTY5MTI2OTA1MC42MC4wLjA.";
+
+    // Prompt used to generate the 5 images using DALL-E 2 or Midjourney
+    string private constant PROMPT_DESCRIPTION = "Unleash the Power of Pokemons - Catch, Train, and Battle!";
 
     // Pokemon data structure
     struct Pokemon {
@@ -18,21 +17,17 @@ contract PokemonContract is ERC721Enumerable, Ownable {
         string description;
         string imageURI;
         string elementType;
-        uint256 level;
-        bool specialAbilityActive;
     }
 
     // Mapping to store Pokemon data for each token ID
     mapping(uint256 => Pokemon) private _pokemonData;
 
-    // Mapping to store if a Pokemon has been minted or not
-    mapping(string => bool) private _mintedPokemons;
+    // The base URI for metadata of the tokens
+    string private baseTokenURI;
 
-    // Prompt used to generate the 5 images using DALL-E 2 or Midjourney
-    string private constant promptDescription = "Unleash the Power of Pokemons - Catch, Train, and Battle!";
-
-    constructor(string memory _name, string memory _symbol, string memory _baseTokenURI) ERC721(_name, _symbol) {
-        baseTokenURI = _baseTokenURI;
+    constructor() ERC721("Pokemon", "POK") {
+        // Set the base token URI
+        baseTokenURI = BASE_TOKEN_URI;
     }
 
     // Mint a new Pokemon NFT
@@ -43,33 +38,17 @@ contract PokemonContract is ERC721Enumerable, Ownable {
         string memory imageURI,
         string memory elementType
     ) external onlyOwner {
-        require(!_mintedPokemons[pokemonName], "Pokemon already minted");
-    uint256 newTokenId = _tokenIdCounter.current();
-    _tokenIdCounter.increment();
-    _mint(to, newTokenId);
+        uint256 newTokenId = totalSupply();
+        _mint(to, newTokenId);
 
-    // Store Pokemon data for the token ID
-    _pokemonData[newTokenId] = Pokemon(pokemonName, description, imageURI, elementType, 1, false);
-
-    _mintedPokemons[pokemonName] = true;
+        // Store Pokemon data for the token ID
+        _pokemonData[newTokenId] = Pokemon(pokemonName, description, imageURI, elementType);
     }
 
     // Get Pokemon data for a specific token ID
     function getPokemonData(uint256 tokenId) external view returns (Pokemon memory) {
         require(_exists(tokenId), "Token ID does not exist");
         return _pokemonData[tokenId];
-    }
-
-    // Activate special ability for a Pokemon
-    function activateSpecialAbility(uint256 tokenId) external {
-        require(_isApprovedOrOwner(_msgSender(), tokenId), "You don't own this Pokemon");
-        _pokemonData[tokenId].specialAbilityActive = true;
-    }
-
-    // Deactivate special ability for a Pokemon
-    function deactivateSpecialAbility(uint256 tokenId) external {
-        require(_isApprovedOrOwner(_msgSender(), tokenId), "You don't own this Pokemon");
-        _pokemonData[tokenId].specialAbilityActive = false;
     }
 
     // Override the _baseURI function to return the base URI
@@ -82,8 +61,8 @@ contract PokemonContract is ERC721Enumerable, Ownable {
         baseTokenURI = newBaseTokenURI;
     }
 
-    // Get the hardcoded prompt used to generate the 5 images using DALL-E 2 or Midjourney
+    // Get the hardcoded prompt description
     function getPromptDescription() external pure returns (string memory) {
-        return promptDescription;
+        return PROMPT_DESCRIPTION;
     }
 }
