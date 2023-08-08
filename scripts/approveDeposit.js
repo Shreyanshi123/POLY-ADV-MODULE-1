@@ -9,10 +9,13 @@ const hre = require("hardhat");
 const fxRootContractABI = require("../fxRootContractABI.json");
 const NFTContractJSON = require("../artifacts/contracts/PokemonContract.sol/PokemonContract.json");
 
-const NFTAddress = "0x40b09C149f873C87f436610f813A116f39c02FA9"; // place your erc71 contract address here
+
+const NFTAddress = "0x4C614F660780b3A6C38fe4d3797714925d15dE96";
 const NFTABI = NFTContractJSON.abi;
 const fxERC71RootAddress = "0xF9bc4a80464E48369303196645e876c8C7D972de"; // 0xF9bc4a80464E48369303196645e876c8C7D972de
-const walletAddress = "0xBEefDB19e5B0B50F8b0D403c89F381432035f932"; // place your public address for your wallet here
+
+const walletAddress = "0x335F87d07A1e8a6A1FBF42d5265AdC6dCC732315";
+
 
 async function main() {
 
