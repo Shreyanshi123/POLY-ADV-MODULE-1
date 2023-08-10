@@ -5,44 +5,32 @@
 // will compile your contracts, add the Hardhat Runtime Environment's members to the
 // global scope, and execute the script.
 const hre = require("hardhat");
-
 const fxRootContractABI = require("../fxRootContractABI.json");
-const NFTContractJSON = require("../artifacts/contracts/PokemonContract.sol/PokemonContract.json");
+const tokenContractJSON = require("../artifacts/contracts/PokemonContract.sol/PokemonContract.json");
 
-
-const NFTAddress = "0x4C614F660780b3A6C38fe4d3797714925d15dE96";
-const NFTABI = NFTContractJSON.abi;
-const fxERC71RootAddress = "0xF9bc4a80464E48369303196645e876c8C7D972de"; // 0xF9bc4a80464E48369303196645e876c8C7D972de
-
+const tokenAddress = "0x9C0Ccb3efB9be5E4E595827e93053E9b2dF10a85";
+const tokenABI = tokenContractJSON.abi;
+const fxERC721RootAddress = "0xF9bc4a80464E48369303196645e876c8C7D972de";
 const walletAddress = "0x335F87d07A1e8a6A1FBF42d5265AdC6dCC732315";
-
-
 async function main() {
 
-    const NFTContract = await hre.ethers.getContractAt(NFTABI, NFTAddress);
-    const fxContract = await hre.ethers.getContractAt(fxRootContractABI, fxERC71RootAddress);
-
-    const NFTid = [1,2,3,4,5];
-
-  
-    const approveTx = await NFTContract.setApprovalForAll(fxERC71RootAddress, true);
+  const tokenContract = await hre.ethers.getContractAt(tokenABI, tokenAddress);
+  const fxContract = await hre.ethers.getContractAt(fxRootContractABI, fxERC721RootAddress);
+  for (let i = 0; i < 5; i++) {
+    const approveTx = await tokenContract.approve(fxERC721RootAddress, i);
     await approveTx.wait();
-
+    const depositTx = await fxContract.deposit(tokenAddress, walletAddress, i, "0x6556");
+    await depositTx.wait();
 
     console.log('Approval confirmed');
-
-    for(let i = 0; i < 5; i++){
-    const depositTx = await fxContract.deposit(NFTAddress, walletAddress, NFTid[i], "0x6556");
-    await depositTx.wait();
-    }
-
-    console.log("NFTs deposited");
-  
+    console.log("Tokens deposited");
   }
-  
-  // We recommend this pattern to be able to use async/await everywhere
-  // and properly handle errors.
-  main().catch((error) => {
-    console.error(error);
-    process.exitCode = 1;
-  });
+
+
+
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
